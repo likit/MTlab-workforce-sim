@@ -46,14 +46,17 @@ st.subheader('Number of Orders')
 st.number_input('Enter a number of orders in this simulation:', key='num_orders', step=1)
 
 st.subheader('Duration')
-throughput = st.number_input('Enter a minimum registering time:', key='registering_duration_min', value=1.0)
-throughput = st.number_input('Enter a maximum registering time:', key='registering_duration_max', value=2.0)
+st.number_input('Enter a minimum registering time:', key='registering_duration_min', value=1.0)
+st.number_input('Enter a maximum registering time:', key='registering_duration_max', value=2.0)
 
-throughput = st.number_input('Enter a minimum reporting time:', key='reporting_duration_min', value=1.0)
-throughput = st.number_input('Enter a maximum reporting time:', key='reporting_duration_max', value=2.0)
+st.number_input('Enter a minimum reporting time:', key='reporting_duration_min', value=1.0)
+st.number_input('Enter a maximum reporting time:', key='reporting_duration_max', value=2.0)
 
-throughput = st.number_input('Enter a minimum approving time:', key='approving_duration_min', value=1.0)
-throughput = st.number_input('Enter a maximum approving time:', key='approving_duration_max', value=2.0)
+st.number_input('Enter a minimum approving time:', key='approving_duration_min', value=1.0)
+st.number_input('Enter a maximum approving time:', key='approving_duration_max', value=2.0)
+
+st.number_input('Enter a minimum specimens delay time:', key='delay_duration_min', value=1.0)
+st.number_input('Enter a maximum specimens delay time:', key='delay_duration_max', value=2.0)
 
 st.subheader('Analytical Machine')
 
@@ -127,11 +130,12 @@ def test(env, lab_order):
 
     for test_order in lab_order['test_orders']:
         machine_name = random.choice(st.session_state.tests[test_order.test_name]['machines'])
+        yield env.timeout(random.randrange(st.session_state.delay_duration_min, st.session_state.delay_duration_max))
         with machine_resources[machine_name].request() as request:
             start_t = env.now
             yield request
             wait_t = env.now - start_t
-            yield env.timeout((st.session_state.machines[machine_name]['throughput'] / 60) /60)
+            yield env.timeout(1 / (st.session_state.machines[machine_name]['throughput'] / 60))
             finish_t = env.now
             analyzing_times.append(TimeTracker(start_t, finish_t, wait_t, finish_t - start_t, test_order.test_name, machine_name))
 
